@@ -8,7 +8,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 
-contract llamaPfp is ERC721, Ownable {
+contract genericPfp is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     bytes32 immutable DOMAIN_SEPARATOR;
@@ -23,6 +23,7 @@ contract llamaPfp is ERC721, Ownable {
     constructor(
         string memory _name,
         string memory _symbol,
+        string memory _slug,
         string memory _metadataFolderURI,
         uint256 _mintsPerAddress,
         string memory _openseaContractMetadataURL,
@@ -30,16 +31,16 @@ contract llamaPfp is ERC721, Ownable {
         address _validSigner,
         address  _manualTransfersAddress
     ) ERC721(_name, _symbol) {
-        metadataFolderURI = _metadataFolderURI;
+        metadataFolderURI = string.concat(_metadataFolderURI, _slug, "/");
         mintsPerAddress = _mintsPerAddress;
-        openseaContractMetadataURL = _openseaContractMetadataURL;
+        openseaContractMetadataURL = string.concat(_openseaContractMetadataURL, _slug);
         mintActive = _mintActive;
         validSigner = _validSigner;
         manualTransfersAddress = _manualTransfersAddress;
 
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256("llamaPfp"),
+                keccak256(abi.encodePacked(_slug)),
                 keccak256("1"),
                 block.chainid,
                 address(this)

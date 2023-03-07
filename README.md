@@ -30,7 +30,44 @@ ETHERSCAN_KEY=<YOUR_ETHERSCAN_KEY>
 * Deploy the contract by running `forge script script/deploy.s.sol:DeployGenericPfp --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --broadcast --etherscan-api-key $ETHERSCAN_KEY -vvvv`
 * Wait a minute or two, and then verify the contract on Etherscan by running `forge script script/deploy.s.sol:DeployGenericPfp --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv`
 
+
+
 ## Deploy to mainnet
 
 * Deploy the contract by running `forge script script/deploy.s.sol:DeployGenericPfp --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast --etherscan-api-key $ETHERSCAN_KEY -vvvv`
 * Wait a minute or two, and then verify the contract on Etherscan by running `forge script script/deploy.s.sol:DeployGenericPfp --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv`
+
+
+
+## Deploy scripts`
+```bash
+deploy_contract() {
+    contract_line=$(grep -o 'contract.*is Script' script/deploy.s.sol)
+    contract_name=$(echo $contract_line | cut -d " " -f 2)
+
+    if [ "$1" = 'mainnet' ]
+    then
+        forge script script/deploy.s.sol:$contract_name --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --broadcast --etherscan-api-key $ETHERSCAN_KEY -vvvv
+        forge script script/deploy.s.sol:$contract_name --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv
+    else
+        forge script script/deploy.s.sol:$contract_name --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --broadcast --etherscan-api-key $ETHERSCAN_KEY -vvvv
+        forge script script/deploy.s.sol:$contract_name --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv
+    fi
+}
+
+reverify_contract() {
+    contract_line=$(grep -o 'contract.*is Script' script/deploy.s.sol)
+    contract_name=$(echo $contract_line | cut -d " " -f 2)
+
+    if [ "$1" = 'mainnet' ]
+    then
+        forge script script/deploy.s.sol:$contract_name --rpc-url $MAINNET_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv
+    else
+        forge script script/deploy.s.sol:$contract_name --rpc-url $GOERLI_RPC_URL --private-key $PRIVATE_KEY --verify --etherscan-api-key $ETHERSCAN_KEY -vvvv
+    fi
+}
+```
+
+`deploy_contract` will deploy to goerli
+
+`deploy_contract mainnet` will deploy to ethereum mainnet 

@@ -31,7 +31,7 @@ contract genericPfpTest is Test {
         vm.prank(owner);
         genericPfpContract = new genericPfp(
             "genericPfp",
-            "LLMAPFP",
+            "PFP",
             "generic-pfp",
             "NOT_IMPLEMENTED",
             1,
@@ -43,7 +43,7 @@ contract genericPfpTest is Test {
 
         bytes32 DOMAIN_SEPARATOR = keccak256(
             abi.encode(
-                keccak256("genericPfp"),
+                keccak256("generic-pfp"),
                 keccak256("1"),
                 block.chainid,
                 genericPfpContract.getAddress()

@@ -1,0 +1,1 @@
+"Robo Nova" "RBNVA" "robo-nova" "https://dev.avatar-studio.xyz/api/metadata/" "1000" "https://dev.avatar-studio.xyz/api/contract-metadata/" "true" 0x3EDfd44082A87CF1b4cbB68D6Cf61F0A40d0b68f 0x9D8395A406FA264DeA71671c772269e844264E8C

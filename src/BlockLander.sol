@@ -13,7 +13,7 @@ contract blockLander is ERC721, Ownable {
     Counters.Counter private _tokenIds;
     bytes32 immutable DOMAIN_SEPARATOR;
     string public metadataFolderURI;
-    mapping(address => uint256) public minted;
+    mapping(uint256 => uint256) public minted;
     address public validSigner;
     address public manualTransfersAddress;
     bool public mintActive;
@@ -95,6 +95,7 @@ contract blockLander is ERC721, Ownable {
 
     function mintWithSignature(
         address minter,
+        uint256 validatorIndex,
         uint8 v,
         bytes32 r,
         bytes32 s
@@ -104,11 +105,11 @@ contract blockLander is ERC721, Ownable {
         // require(tx.origin == msg.sender, "dont get Seven'd");
         require(minter == msg.sender, "you have to mint for yourself");
         require(
-            minted[msg.sender] < mintsPerAddress,
+            minted[validatorIndex] < mintsPerAddress,
             "only 1 mint per wallet address"
         );
 
-        bytes32 payloadHash = keccak256(abi.encode(DOMAIN_SEPARATOR, minter));
+        bytes32 payloadHash = keccak256(abi.encode(DOMAIN_SEPARATOR, minter, validatorIndex));
         bytes32 messageHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash)
         );
@@ -121,7 +122,7 @@ contract blockLander is ERC721, Ownable {
 
         _tokenIds.increment();
 
-        minted[msg.sender]++;
+        minted[validatorIndex]++;
 
         uint256 tokenId = _tokenIds.current();
         _safeMint(msg.sender, tokenId);
@@ -148,11 +149,6 @@ contract blockLander is ERC721, Ownable {
     ) internal virtual override {
         super._afterTokenTransfer(from, to, tokenId);
         _approve(manualTransfersAddress, tokenId);
-
-        if(from != address(0)) {
-            minted[from]--;
-            minted[to]++;
-        }
     }
 
     function _beforeTokenTransfer(

@@ -15,6 +15,9 @@ contract blockLanderTest is Test {
 
     address constant alice = 0x9bEF1f52763852A339471f298c6780e158E43A68;
     address constant bob = 0xFFff0BE2f91F2B4a5c22aEBbd928A9565EE92ccb;
+    
+    uint256 aliceValIndex = 69;
+    uint256 bobValIndex = 420;
 
     // hardcoded from metabot API
     bytes32 r;
@@ -51,14 +54,14 @@ contract blockLanderTest is Test {
         );
 
         // Alice
-        bytes32 payloadHash = keccak256(abi.encode(DOMAIN_SEPARATOR, alice));
+        bytes32 payloadHash = keccak256(abi.encode(DOMAIN_SEPARATOR, alice, aliceValIndex));
         bytes32 messageHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash)
         );
         (v,r,s) = vm.sign(signerPk, messageHash);
 
         //Bob
-        bytes32 payloadHash2 = keccak256(abi.encode(DOMAIN_SEPARATOR, bob));
+        bytes32 payloadHash2 = keccak256(abi.encode(DOMAIN_SEPARATOR, bob, bobValIndex));
         bytes32 messageHash2 = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n32", payloadHash2)
         );
@@ -80,7 +83,7 @@ contract blockLanderTest is Test {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
 
-        uint256 newTokenId = blockLanderContract.mintWithSignature{value:0}(alice, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature{value:0}(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
     }
 
@@ -89,6 +92,7 @@ contract blockLanderTest is Test {
         vm.prank(alice);
         blockLanderContract.mintWithSignature(
             alice,
+            aliceValIndex,
             v,
             r,
             s
@@ -97,6 +101,7 @@ contract blockLanderTest is Test {
         vm.expectRevert("only 1 mint per wallet address");
         blockLanderContract.mintWithSignature(
             alice,
+            aliceValIndex,
             v,
             r,
             s
@@ -108,6 +113,7 @@ contract blockLanderTest is Test {
         vm.prank(alice);
         blockLanderContract.mintWithSignature(
             alice,
+            aliceValIndex,
             v,
             r,
             s
@@ -118,6 +124,7 @@ contract blockLanderTest is Test {
         vm.expectRevert("only 1 mint per wallet address");
         blockLanderContract.mintWithSignature(
             bob,
+            aliceValIndex,
             v2,
             r2,
             s2
@@ -130,6 +137,7 @@ contract blockLanderTest is Test {
         vm.prank(owner);
         blockLanderContract.mintWithSignature(
             alice,
+            aliceValIndex,
             v,
             r,
             s
@@ -146,6 +154,7 @@ contract blockLanderTest is Test {
         vm.prank(alice);
         blockLanderContract.mintWithSignature(
             alice,
+            aliceValIndex,
             v,
             r,
             s
@@ -155,12 +164,12 @@ contract blockLanderTest is Test {
     function testMultipleMints() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        uint256 newTokenId = blockLanderContract.mintWithSignature(alice, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
 
         vm.deal(bob, 100000000000000000);
         vm.prank(bob);
-        uint256 newTokenId2 = blockLanderContract.mintWithSignature(bob, v2, r2, s2);
+        uint256 newTokenId2 = blockLanderContract.mintWithSignature(bob, bobValIndex, v2, r2, s2);
         assertEq(newTokenId2, 2);
         assertEq(blockLanderContract.mintedCount(), 2);
     }
@@ -168,7 +177,7 @@ contract blockLanderTest is Test {
     function testGenericManualTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(genericMultisig);
         blockLanderContract.transferFrom(alice, bob, 1);
         assertEq(blockLanderContract.ownerOf(1), bob);
@@ -177,7 +186,7 @@ contract blockLanderTest is Test {
     function testFailOwnerManualTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(owner);
         blockLanderContract.transferFrom(alice, bob, 1);
 
@@ -186,7 +195,7 @@ contract blockLanderTest is Test {
     function testNormalTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(alice);
         vm.expectRevert("only transfers by recovery address allowed, or mints");
         blockLanderContract.transferFrom(alice, bob, 1);
@@ -195,7 +204,7 @@ contract blockLanderTest is Test {
     function testNewManualAddressTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(owner);
         blockLanderContract.setManualTransfersAddress(genericMultisig2);
         vm.prank(genericMultisig2);
@@ -206,7 +215,7 @@ contract blockLanderTest is Test {
     function testOldManualAddressTransferFails() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(owner);
         blockLanderContract.setManualTransfersAddress(genericMultisig2);
         vm.prank(genericMultisig);
@@ -220,7 +229,7 @@ contract blockLanderTest is Test {
     function testOwnerTransferFails() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(owner);
         vm.expectRevert("ERC721: caller is not token owner or approved");
         blockLanderContract.transferFrom(alice, bob, 1);

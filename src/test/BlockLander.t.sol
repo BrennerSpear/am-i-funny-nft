@@ -2,10 +2,10 @@
 pragma solidity 0.8.13;
 
 import "forge-std/Test.sol";
-import "../GenericPfp.sol";
+import "../BlockLander.sol";
 import "forge-std/console.sol";
 
-contract genericPfpTest is Test {
+contract blockLanderTest is Test {
     address constant owner = 0x44C489197133D7076Cd9ecB33682D6Efd271c6F7;
     address constant genericMultisig = 0xcb33682d6EFd271c6f744C489197133d7076CD9e;
     address constant genericMultisig2 = 0xD271c6F744c489197133D7076Cd9Ecb33682d6EF;
@@ -25,12 +25,12 @@ contract genericPfpTest is Test {
     bytes32 s2;
     uint8 v2;
 
-    genericPfp genericPfpContract;
+    blockLander blockLanderContract;
 
     constructor() {
         vm.prank(owner);
-        genericPfpContract = new genericPfp(
-            "genericPfp",
+        blockLanderContract = new blockLander(
+            "blockLander",
             "PFP",
             "generic-pfp",
             "NOT_IMPLEMENTED",
@@ -46,7 +46,7 @@ contract genericPfpTest is Test {
                 keccak256("generic-pfp"),
                 keccak256("1"),
                 block.chainid,
-                genericPfpContract.getAddress()
+                blockLanderContract.getAddress()
             )
         );
 
@@ -68,26 +68,26 @@ contract genericPfpTest is Test {
 
     function setUp() public {
         vm.prank(owner);
-        genericPfpContract.setMintActive(true);
+        blockLanderContract.setMintActive(true);
     }
 
     function testFailSetActiveByNonOwner() public {
         vm.prank(alice);
-        genericPfpContract.setMintActive(true);
+        blockLanderContract.setMintActive(true);
     }
 
     function testMintWithSignature() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
 
-        uint256 newTokenId = genericPfpContract.mintWithSignature{value:0}(alice, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature{value:0}(alice, v, r, s);
         assertEq(newTokenId, 1);
     }
 
     function testCannotMintTwice() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             alice,
             v,
             r,
@@ -95,7 +95,7 @@ contract genericPfpTest is Test {
         );
         vm.prank(alice);
         vm.expectRevert("only 1 mint per wallet address");
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             alice,
             v,
             r,
@@ -106,17 +106,17 @@ contract genericPfpTest is Test {
     function testCannotMintTwiceAfterTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             alice,
             v,
             r,
             s
         );
         vm.prank(genericMultisig);
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
         vm.prank(bob);
         vm.expectRevert("only 1 mint per wallet address");
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             bob,
             v2,
             r2,
@@ -128,7 +128,7 @@ contract genericPfpTest is Test {
         vm.deal(owner, 100000000000000000);
         vm.expectRevert("you have to mint for yourself");
         vm.prank(owner);
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             alice,
             v,
             r,
@@ -139,12 +139,12 @@ contract genericPfpTest is Test {
     function testCannotFakeSignature() public {
         address newSigner = owner;
         vm.prank(owner);
-        genericPfpContract.setValidSigner(newSigner);
+        blockLanderContract.setValidSigner(newSigner);
 
         vm.deal(alice, 100000000000000000);
         vm.expectRevert(bytes("Invalid signer"));
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(
+        blockLanderContract.mintWithSignature(
             alice,
             v,
             r,
@@ -155,74 +155,74 @@ contract genericPfpTest is Test {
     function testMultipleMints() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        uint256 newTokenId = genericPfpContract.mintWithSignature(alice, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature(alice, v, r, s);
         assertEq(newTokenId, 1);
 
         vm.deal(bob, 100000000000000000);
         vm.prank(bob);
-        uint256 newTokenId2 = genericPfpContract.mintWithSignature(bob, v2, r2, s2);
+        uint256 newTokenId2 = blockLanderContract.mintWithSignature(bob, v2, r2, s2);
         assertEq(newTokenId2, 2);
-        assertEq(genericPfpContract.mintedCount(), 2);
+        assertEq(blockLanderContract.mintedCount(), 2);
     }
     
     function testGenericManualTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(genericMultisig);
-        genericPfpContract.transferFrom(alice, bob, 1);
-        assertEq(genericPfpContract.ownerOf(1), bob);
+        blockLanderContract.transferFrom(alice, bob, 1);
+        assertEq(blockLanderContract.ownerOf(1), bob);
     }
 
     function testFailOwnerManualTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(owner);
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
 
     }
     
     function testNormalTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(alice);
         vm.expectRevert("only transfers by recovery address allowed, or mints");
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
     }
 
     function testNewManualAddressTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(owner);
-        genericPfpContract.setManualTransfersAddress(genericMultisig2);
+        blockLanderContract.setManualTransfersAddress(genericMultisig2);
         vm.prank(genericMultisig2);
-        genericPfpContract.transferFrom(alice, bob, 1);
-        assertEq(genericPfpContract.ownerOf(1), bob);
+        blockLanderContract.transferFrom(alice, bob, 1);
+        assertEq(blockLanderContract.ownerOf(1), bob);
     }
 
     function testOldManualAddressTransferFails() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(owner);
-        genericPfpContract.setManualTransfersAddress(genericMultisig2);
+        blockLanderContract.setManualTransfersAddress(genericMultisig2);
         vm.prank(genericMultisig);
         vm.expectRevert("ERC721: caller is not token owner or approved");
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
         vm.prank(owner);
         vm.expectRevert("ERC721: caller is not token owner or approved");
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
     }
 
     function testOwnerTransferFails() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        genericPfpContract.mintWithSignature(alice, v, r, s);
+        blockLanderContract.mintWithSignature(alice, v, r, s);
         vm.prank(owner);
         vm.expectRevert("ERC721: caller is not token owner or approved");
-        genericPfpContract.transferFrom(alice, bob, 1);
+        blockLanderContract.transferFrom(alice, bob, 1);
     }
 }

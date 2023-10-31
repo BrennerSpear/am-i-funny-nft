@@ -2,42 +2,28 @@
 pragma solidity 0.8.13;
 
 import "forge-std/Script.sol";
-import "../src/GenericPfp.sol";
+import "../src/BlockLander.sol";
 
-contract DeployGenericPfp is Script {
+contract DeployBlockLander is Script {
     function run() external {
         vm.startBroadcast();
 
-        string memory name = "Vanderbilt Commodores";
-        string memory symbol = "VANDY";
-        string memory slug = "commodore";
-
-        // string memory name = "Llama Pfp";
-        // string memory symbol = "LMAPFP";
-        // string memory slug = "llama-pfp";
-
-        // string memory name = "Robo Nova";
-        // string memory symbol = "RBNVA";
-        // string memory slug = "robo-nova";
-
-        // string memory name = "CDMX Axolotls";
-        // string memory symbol = "AXTL";
-        // string memory slug = "cdmx-axolotls";
-
-
+        string memory name = "Block Lander";
+        string memory symbol = "BLCKLANDR";
+        string memory slug = "blockLander";
 
         bool isMainnet = block.chainid == 1;
 
         // use a different address if the chain is mainnet
-        address validSigner = isMainnet ? 0xF04284F4470230b4f19C1dCa4FC9cd0f93170Ba6 : 0x3EDfd44082A87CF1b4cbB68D6Cf61F0A40d0b68f;
+        address validSigner = isMainnet ? 0xF04284F4470230b4f19C1dCa4FC9cd0f93170Ba6 : 0x9DfaEf433F3257600b27734d5cD8155a5c389604;
 
         uint256 mintsPerAddress = isMainnet ? 1 : 1000;
         bool isMintActive = isMainnet ? false : true;
         address metagameAddress = 0x9D8395A406FA264DeA71671c772269e844264E8C; // TODO Update this address
-        string memory metadataFolderUri = isMainnet ? "https://avatar-studio.xyz/api/metadata/" : "https://dev.avatar-studio.xyz/api/metadata/";
-        string memory contractMetadataUrl = isMainnet ? "https://avatar-studio.xyz/api/contract-metadata/" : "https://dev.avatar-studio.xyz/api/contract-metadata/";
+        string memory metadataFolderUri = isMainnet ? "https://blocklander.vercel.app/api/nft/" : "https://dev-blocklander.vercel.app/api/nft/";
+        string memory contractMetadataUrl = isMainnet ? "https://blocklander.vercel.app/api/contract-metadata/" : "https://dev-blocklander.vercel.app/api/contract-metadata/";
 
-         genericPfp genericPfpInstance = new genericPfp(
+         blockLander blockLanderInstance = new blockLander(
             name, // name
             symbol, // symbol
             slug, // slug

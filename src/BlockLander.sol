@@ -8,7 +8,7 @@ import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
 
-contract genericPfp is ERC721, Ownable {
+contract blockLander is ERC721, Ownable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     bytes32 immutable DOMAIN_SEPARATOR;
@@ -31,7 +31,7 @@ contract genericPfp is ERC721, Ownable {
         address _validSigner,
         address  _manualTransfersAddress
     ) ERC721(_name, _symbol) {
-        metadataFolderURI = string.concat(_metadataFolderURI, _slug, "/");
+        metadataFolderURI = string.concat(_metadataFolderURI, "/");
         mintsPerAddress = _mintsPerAddress;
         openseaContractMetadataURL = string.concat(_openseaContractMetadataURL, _slug);
         mintActive = _mintActive;

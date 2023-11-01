@@ -14,8 +14,8 @@ contract blockLander is ERC721, Ownable {
     bytes32 immutable DOMAIN_SEPARATOR;
     string public metadataFolderURI;
     mapping(uint256 => uint256) public minted;
+    mapping(uint256 => address) public minterMap;
     address public validSigner;
-    address public manualTransfersAddress;
     bool public mintActive;
     uint256 public mintsPerAddress;
     string public openseaContractMetadataURL;
@@ -28,15 +28,13 @@ contract blockLander is ERC721, Ownable {
         uint256 _mintsPerAddress,
         string memory _openseaContractMetadataURL,
         bool _mintActive,
-        address _validSigner,
-        address  _manualTransfersAddress
+        address _validSigner
     ) ERC721(_name, _symbol) {
         metadataFolderURI = string.concat(_metadataFolderURI, "/");
         mintsPerAddress = _mintsPerAddress;
         openseaContractMetadataURL = string.concat(_openseaContractMetadataURL, _slug);
         mintActive = _mintActive;
         validSigner = _validSigner;
-        manualTransfersAddress = _manualTransfersAddress;
 
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
@@ -50,18 +48,6 @@ contract blockLander is ERC721, Ownable {
 
     function setValidSigner(address _validSigner) external onlyOwner {
         validSigner = _validSigner;
-    }
-    
-    /**
-     * @dev Sets the address that can manually transfer tokens in the event a member loses their private key. This function will become more expensive the more NFTs this contract has created
-     */
-    function setManualTransfersAddress(address _manualTransfersAddress) external onlyOwner {
-        manualTransfersAddress = _manualTransfersAddress;
-
-        for(uint256 i = 1; i <= _tokenIds.current(); i++) {
-            _approve(manualTransfersAddress, i);
-        }
-
     }
 
     function setMetadataFolderURI(string calldata folderUrl) public onlyOwner {
@@ -106,7 +92,7 @@ contract blockLander is ERC721, Ownable {
         require(minter == msg.sender, "you have to mint for yourself");
         require(
             minted[validatorIndex] < mintsPerAddress,
-            "only 1 mint per wallet address"
+            "only 1 mint per validator index"
         );
 
         bytes32 payloadHash = keccak256(abi.encode(DOMAIN_SEPARATOR, minter, validatorIndex));
@@ -127,6 +113,8 @@ contract blockLander is ERC721, Ownable {
         uint256 tokenId = _tokenIds.current();
         _safeMint(msg.sender, tokenId);
 
+        minterMap[tokenId] = minter;
+
         return tokenId;
     }
 
@@ -142,21 +130,7 @@ contract blockLander is ERC721, Ownable {
         return address(this);
     }
 
-    function _afterTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override {
-        super._afterTokenTransfer(from, to, tokenId);
-        _approve(manualTransfersAddress, tokenId);
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId);
-        require(msg.sender == manualTransfersAddress || from == address(0), "only transfers by recovery address allowed, or mints");
+    function minterOf(uint256 tokenId) public view returns (address) {
+        return minterMap[tokenId];
     }
 }

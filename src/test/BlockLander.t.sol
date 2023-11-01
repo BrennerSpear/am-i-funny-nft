@@ -7,8 +7,6 @@ import "forge-std/console.sol";
 
 contract blockLanderTest is Test {
     address constant owner = 0x44C489197133D7076Cd9ecB33682D6Efd271c6F7;
-    address constant genericMultisig = 0xcb33682d6EFd271c6f744C489197133d7076CD9e;
-    address constant genericMultisig2 = 0xD271c6F744c489197133D7076Cd9Ecb33682d6EF;
 
     uint private immutable signerPk = 1;
     address private immutable signer = vm.addr(1);
@@ -40,8 +38,7 @@ contract blockLanderTest is Test {
             1,
             "NOT_IMPLEMENTED",
             false,
-            signer,
-            genericMultisig
+            signer
         );
 
         bytes32 DOMAIN_SEPARATOR = keccak256(
@@ -97,37 +94,14 @@ contract blockLanderTest is Test {
             r,
             s
         );
-        vm.prank(alice);
-        vm.expectRevert("only 1 mint per wallet address");
-        blockLanderContract.mintWithSignature(
-            alice,
-            aliceValIndex,
-            v,
-            r,
-            s
-        );
-    }
-
-    function testCannotMintTwiceAfterTransfer() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(
-            alice,
-            aliceValIndex,
-            v,
-            r,
-            s
-        );
-        vm.prank(genericMultisig);
-        blockLanderContract.transferFrom(alice, bob, 1);
         vm.prank(bob);
-        vm.expectRevert("only 1 mint per wallet address");
+        vm.expectRevert("only 1 mint per validator index");
         blockLanderContract.mintWithSignature(
             bob,
             aliceValIndex,
-            v2,
-            r2,
-            s2
+            v,
+            r,
+            s
         );
     }
 
@@ -174,64 +148,11 @@ contract blockLanderTest is Test {
         assertEq(blockLanderContract.mintedCount(), 2);
     }
     
-    function testGenericManualTransfer() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
-        vm.prank(genericMultisig);
-        blockLanderContract.transferFrom(alice, bob, 1);
-        assertEq(blockLanderContract.ownerOf(1), bob);
-    }
-
-    function testFailOwnerManualTransfer() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
-        vm.prank(owner);
-        blockLanderContract.transferFrom(alice, bob, 1);
-
-    }
-    
     function testNormalTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
         blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
         vm.prank(alice);
-        vm.expectRevert("only transfers by recovery address allowed, or mints");
-        blockLanderContract.transferFrom(alice, bob, 1);
-    }
-
-    function testNewManualAddressTransfer() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
-        vm.prank(owner);
-        blockLanderContract.setManualTransfersAddress(genericMultisig2);
-        vm.prank(genericMultisig2);
-        blockLanderContract.transferFrom(alice, bob, 1);
-        assertEq(blockLanderContract.ownerOf(1), bob);
-    }
-
-    function testOldManualAddressTransferFails() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
-        vm.prank(owner);
-        blockLanderContract.setManualTransfersAddress(genericMultisig2);
-        vm.prank(genericMultisig);
-        vm.expectRevert("ERC721: caller is not token owner or approved");
-        blockLanderContract.transferFrom(alice, bob, 1);
-        vm.prank(owner);
-        vm.expectRevert("ERC721: caller is not token owner or approved");
-        blockLanderContract.transferFrom(alice, bob, 1);
-    }
-
-    function testOwnerTransferFails() public {
-        vm.deal(alice, 100000000000000000);
-        vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
-        vm.prank(owner);
-        vm.expectRevert("ERC721: caller is not token owner or approved");
         blockLanderContract.transferFrom(alice, bob, 1);
     }
 }

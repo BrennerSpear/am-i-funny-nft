@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: GNU LGPLv3
 pragma solidity 0.8.13;
 
-import "forge-std/console.sol";
-
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";

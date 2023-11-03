@@ -26,6 +26,9 @@ contract blockLanderTest is Test {
     bytes32 s2;
     uint8 v2;
 
+    // mint price = 777
+    uint256 mintPrice = .000777 ether;
+
     blockLander blockLanderContract;
 
     constructor() {
@@ -80,23 +83,24 @@ contract blockLanderTest is Test {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
 
-        uint256 newTokenId = blockLanderContract.mintWithSignature{value:0}(alice, aliceValIndex, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
     }
 
     function testCannotMintTwice() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(
+        blockLanderContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
             r,
             s
         );
+        vm.deal(bob, 100000000000000000);
         vm.prank(bob);
         vm.expectRevert("only 1 mint per validator index");
-        blockLanderContract.mintWithSignature(
+        blockLanderContract.mintWithSignature{value:mintPrice}(
             bob,
             aliceValIndex,
             v,
@@ -109,7 +113,7 @@ contract blockLanderTest is Test {
         vm.deal(owner, 100000000000000000);
         vm.expectRevert("you have to mint for yourself");
         vm.prank(owner);
-        blockLanderContract.mintWithSignature(
+        blockLanderContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
@@ -126,7 +130,7 @@ contract blockLanderTest is Test {
         vm.deal(alice, 100000000000000000);
         vm.expectRevert(bytes("Invalid signer"));
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(
+        blockLanderContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
@@ -138,20 +142,25 @@ contract blockLanderTest is Test {
     function testMultipleMints() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        uint256 newTokenId = blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
+        uint256 newTokenId = blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
 
         vm.deal(bob, 100000000000000000);
         vm.prank(bob);
-        uint256 newTokenId2 = blockLanderContract.mintWithSignature(bob, bobValIndex, v2, r2, s2);
+        uint256 newTokenId2 = blockLanderContract.mintWithSignature{value:mintPrice}(bob, bobValIndex, v2, r2, s2);
         assertEq(newTokenId2, 2);
         assertEq(blockLanderContract.mintedCount(), 2);
+
+        vm.prank(owner);
+        blockLanderContract.withdraw();
+        // check how much eth owner has
+        assertEq(owner.balance, 0.001554 ether); 
     }
     
     function testNormalTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(alice, aliceValIndex, v, r, s);
+        blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         vm.prank(alice);
         blockLanderContract.transferFrom(alice, bob, 1);
     }

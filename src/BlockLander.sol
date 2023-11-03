@@ -13,6 +13,7 @@ contract blockLander is ERC721, Ownable {
     string public metadataFolderURI;
     mapping(uint256 => uint256) public minted;
     mapping(uint256 => address) public minterMap;
+    uint256 public constant price = 0.000777 ether;
     address public validSigner;
     bool public mintActive;
     uint256 public mintsPerAddress;
@@ -103,6 +104,7 @@ contract blockLander is ERC721, Ownable {
 
         require(actualSigner != address(0), "ECDSA: invalid signature");
         require(actualSigner == validSigner, "Invalid signer");
+        require(msg.value == price, 'minting fee is .000777');
 
         _tokenIds.increment();
 
@@ -130,5 +132,10 @@ contract blockLander is ERC721, Ownable {
 
     function minterOf(uint256 tokenId) public view returns (address) {
         return minterMap[tokenId];
+    }
+
+    function withdraw() public onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
     }
 }

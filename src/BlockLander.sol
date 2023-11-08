@@ -85,9 +85,7 @@ contract blockLander is ERC721, Ownable {
         bytes32 r,
         bytes32 s
     ) public payable returns (uint256) {
-        // console.log("why doesn't this work", block.chainid);
         require(mintActive == true, "mint is not active rn..");
-        // require(tx.origin == msg.sender, "dont get Seven'd");
         require(minter == msg.sender, "you have to mint for yourself");
         require(
             minted[validatorIndex] < mintsPerAddress,
@@ -104,7 +102,7 @@ contract blockLander is ERC721, Ownable {
 
         require(actualSigner != address(0), "ECDSA: invalid signature");
         require(actualSigner == validSigner, "Invalid signer");
-        require(msg.value == price, 'minting fee is .000777');
+        require(msg.value == price, 'minting fee is 0.000777');
 
         _tokenIds.increment();
 

@@ -122,6 +122,19 @@ contract blockLanderTest is Test {
         );
     }
 
+    function testMustPay777() public {
+        vm.deal(alice, 100000000000000000);
+        vm.expectRevert('minting fee is 0.000777');
+        vm.prank(alice);
+        blockLanderContract.mintWithSignature(
+            alice,
+            aliceValIndex,
+            v,
+            r,
+            s
+        );
+    }
+
     function testCannotFakeSignature() public {
         address newSigner = owner;
         vm.prank(owner);

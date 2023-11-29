@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GNU LGPLv3
-pragma solidity 0.8.13;
+pragma solidity 0.8.19;
 
 import "openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import "openzeppelin-contracts/contracts/access/Ownable.sol";
 import "openzeppelin-contracts/contracts/utils/Counters.sol";
 import "openzeppelin-contracts/contracts/utils/Strings.sol";
+import {CallbackConsumer} from "infernet/consumer/Callback.sol";
 
-contract blockLander is ERC721, Ownable {
+contract AmIFunny is ERC721, Ownable, CallbackConsumer {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
     bytes32 immutable DOMAIN_SEPARATOR;
@@ -56,6 +57,7 @@ contract blockLander is ERC721, Ownable {
     function setContractMetadataFolderURI(string calldata folderUrl) public onlyOwner {
         openseaContractMetadataURL = folderUrl;
     }
+
 
     function tokenURI(uint256 tokenId)
         public

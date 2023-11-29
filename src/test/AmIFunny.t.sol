@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Test.sol";
-import "../BlockLander.sol";
+import "../AmIFunny.sol";
 import "forge-std/console.sol";
 
-contract blockLanderTest is Test {
+contract AmIFunnyTest is Test {
     address constant owner = 0x44C489197133D7076Cd9ecB33682D6Efd271c6F7;
 
     uint private immutable signerPk = 1;
@@ -29,12 +29,12 @@ contract blockLanderTest is Test {
     // mint price = 777
     uint256 mintPrice = .000777 ether;
 
-    blockLander blockLanderContract;
+    amIFunny amIFunnyContract;
 
     constructor() {
         vm.prank(owner);
-        blockLanderContract = new blockLander(
-            "blockLander",
+        amIFunnyContract = new amIFunny(
+            "amIFunny",
             "PFP",
             "generic-pfp",
             "NOT_IMPLEMENTED",
@@ -49,7 +49,7 @@ contract blockLanderTest is Test {
                 keccak256("generic-pfp"),
                 keccak256("1"),
                 block.chainid,
-                blockLanderContract.getAddress()
+                amIFunnyContract.getAddress()
             )
         );
 
@@ -71,26 +71,26 @@ contract blockLanderTest is Test {
 
     function setUp() public {
         vm.prank(owner);
-        blockLanderContract.setMintActive(true);
+        amIFunnyContract.setMintActive(true);
     }
 
     function testFailSetActiveByNonOwner() public {
         vm.prank(alice);
-        blockLanderContract.setMintActive(true);
+        amIFunnyContract.setMintActive(true);
     }
 
     function testMintWithSignature() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
 
-        uint256 newTokenId = blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
+        uint256 newTokenId = amIFunnyContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
     }
 
     function testCannotMintTwice() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature{value:mintPrice}(
+        amIFunnyContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
@@ -100,7 +100,7 @@ contract blockLanderTest is Test {
         vm.deal(bob, 100000000000000000);
         vm.prank(bob);
         vm.expectRevert("only 1 mint per validator index");
-        blockLanderContract.mintWithSignature{value:mintPrice}(
+        amIFunnyContract.mintWithSignature{value:mintPrice}(
             bob,
             aliceValIndex,
             v,
@@ -113,7 +113,7 @@ contract blockLanderTest is Test {
         vm.deal(owner, 100000000000000000);
         vm.expectRevert("you have to mint for yourself");
         vm.prank(owner);
-        blockLanderContract.mintWithSignature{value:mintPrice}(
+        amIFunnyContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
@@ -126,7 +126,7 @@ contract blockLanderTest is Test {
         vm.deal(alice, 100000000000000000);
         vm.expectRevert('minting fee is 0.000777');
         vm.prank(alice);
-        blockLanderContract.mintWithSignature(
+        amIFunnyContract.mintWithSignature(
             alice,
             aliceValIndex,
             v,
@@ -138,12 +138,12 @@ contract blockLanderTest is Test {
     function testCannotFakeSignature() public {
         address newSigner = owner;
         vm.prank(owner);
-        blockLanderContract.setValidSigner(newSigner);
+        amIFunnyContract.setValidSigner(newSigner);
 
         vm.deal(alice, 100000000000000000);
         vm.expectRevert(bytes("Invalid signer"));
         vm.prank(alice);
-        blockLanderContract.mintWithSignature{value:mintPrice}(
+        amIFunnyContract.mintWithSignature{value:mintPrice}(
             alice,
             aliceValIndex,
             v,
@@ -155,17 +155,17 @@ contract blockLanderTest is Test {
     function testMultipleMints() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        uint256 newTokenId = blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
+        uint256 newTokenId = amIFunnyContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         assertEq(newTokenId, 1);
 
         vm.deal(bob, 100000000000000000);
         vm.prank(bob);
-        uint256 newTokenId2 = blockLanderContract.mintWithSignature{value:mintPrice}(bob, bobValIndex, v2, r2, s2);
+        uint256 newTokenId2 = amIFunnyContract.mintWithSignature{value:mintPrice}(bob, bobValIndex, v2, r2, s2);
         assertEq(newTokenId2, 2);
-        assertEq(blockLanderContract.mintedCount(), 2);
+        assertEq(amIFunnyContract.mintedCount(), 2);
 
         vm.prank(owner);
-        blockLanderContract.withdraw();
+        amIFunnyContract.withdraw();
         // check how much eth owner has
         assertEq(owner.balance, 0.001554 ether); 
     }
@@ -173,8 +173,8 @@ contract blockLanderTest is Test {
     function testNormalTransfer() public {
         vm.deal(alice, 100000000000000000);
         vm.prank(alice);
-        blockLanderContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
+        amIFunnyContract.mintWithSignature{value:mintPrice}(alice, aliceValIndex, v, r, s);
         vm.prank(alice);
-        blockLanderContract.transferFrom(alice, bob, 1);
+        amIFunnyContract.transferFrom(alice, bob, 1);
     }
 }

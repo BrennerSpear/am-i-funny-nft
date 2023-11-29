@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity 0.8.13;
+pragma solidity 0.8.19;
 
 import "forge-std/Script.sol";
-import "../src/BlockLander.sol";
+import "../src/AmIFunny.sol";
 
-contract DeployBlockLander is Script {
+contract DeployAmIFunny is Script {
     function run() external {
         vm.startBroadcast();
 
-        string memory name = "Block Lander";
-        string memory symbol = "BLCKLANDR";
-        string memory slug = "blockLander";
+        string memory name = "Am I Funny?";
+        string memory symbol = "AIF";
+        string memory slug = "amIFunny";
 
         bool isMainnet = block.chainid == 1;
         bool isBase = block.chainid == 8453;
@@ -26,7 +26,7 @@ contract DeployBlockLander is Script {
         string memory metadataFolderUri = isProd ? "https://blocklander.vercel.app/api/nft" : "https://dev-blocklander.vercel.app/api/nft";
         string memory contractMetadataUrl = isProd ? "https://blocklander.vercel.app/api/contract-metadata" : "https://dev-blocklander.vercel.app/api/contract-metadata";
 
-         blockLander blockLanderInstance = new blockLander(
+         amIFunny amIFunnyInstance = new amIFunny(
             name, // name
             symbol, // symbol
             slug, // slug
